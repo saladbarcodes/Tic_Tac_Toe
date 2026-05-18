@@ -40,11 +40,11 @@ int getCol(int position)
 void player_one_turn(int *position, int *row, int *col)
 {
     printf("What position would you like P1?");
-    scanf("%d", position);
-    while (*position > 9 || *position < 0)
+    while (scanf("%d", position) != 1 || *position > 8 || *position < 0)
     {
         printf("What position would you like P1?");
         scanf("%d", position);
+        while (getchar() != '\n');
     }
     // printf("%d", position); // debug
     *row = getRow(*position);
@@ -176,22 +176,27 @@ int main(void)
             rounds++;
         } else if (gameState == P2_TURN)
         {
-            randNum = rand() % 9;
+            randNum = (rand() % 9) + 1;
             compRow = getRow(randNum);
             compCol = getCol(randNum);
-            updateBoardArray(gameBoard, compRow, compCol, 2);
+            while (!updateBoardArray(gameBoard, compRow, compCol, 2))
+            {
+                randNum = (rand() % 9) + 1;
+                compRow = getRow(randNum);
+                compCol = getCol(randNum);
+            }
             gameState = P1_TURN;
             rounds++;
         }
         // after updating the array, update the game board to reflect the array
         printBoard(gameBoard, ROWS, COLS);
-        bool isWon = check_diags(gameBoard, row, col, gameState);
-        if (isWon) printf("GAME WON!\n");
+        bool isWon = check_cross(gameBoard, row, col, gameState);
+        if (isWon) 
+        {
+            printf("GAME WON!\n");
+            return 0;
+        }
         printf("%d\n", rounds);
     }
-
-    // 123
-    // 456
-    // 789
     return 0;
 }
