@@ -10,8 +10,10 @@
 
 int getRow(int position)
 {
+    // checking bounds
     if (position > 9 || position < 0)
         return -1;
+    // This divides by the # of row to get row
     double getRows = (double)position / ROWS;
     // printf("%f", getRows);
     if (getRows > 2)
@@ -92,14 +94,51 @@ int updateBoardArray(int (*gameBoard)[COLS], int row, int col, int newVal)
     return 1;
 }
 
-bool win_condition(int (*gameBoard)[COLS], int row, int col)
-{   
-    if (row == 2 || col == 2) // if the row or col is 2 dont bother checking diagonals
+bool check_cross(int (*gameBoard)[COLS], int row, int col, bool player_turn)
+{
+    int player = player_turn ? 1 : 2;
+    int count = 0;
+    for (int i = 0; i < ROWS; i++)
     {
-        
+        if (gameBoard[i][col] == player) count++;
     }
-    return true;
+    if (count == 3) return true;
+    count = 0;
+    for (int j = 0; j < COLS; j++)
+    {
+        if (gameBoard[row][j] == player) count++;
+    }
+    if (count == 3) return true;
+    return false;
 }
+
+bool check_diags(int (*gameBoard)[COLS], int row, int col, bool player_turn)
+{
+    int player = player_turn ? 1 : 2;
+    int count = 0;
+    int currentCol = COLS - 1;
+    for (int i = 0; i < ROWS; i++)
+    {
+        if (gameBoard[i][i] == player) count++;
+    }
+    if (count == 3) return true;
+    count = 0;
+    for (int j = 0; j < COLS; j++)
+    {
+        if (gameBoard[j][currentCol--] == player) count++;
+    }
+    if (count == 3) return true;
+    return false;
+}
+
+// bool win_condition(int (*gameBoard)[COLS], int row, int col)
+// {   
+//     if (row == 2 || col == 2) // if the row or col is 2 dont bother checking diagonals
+//     {
+//         return check_cross(gameBoard, row, col, );
+//     }
+//     return check_cross(gameBoard) && check_diags(gameBoard);
+// }
 
 // 0 is uninitialized, 1 is X's and 2 is O's
 int main(void)
@@ -146,6 +185,9 @@ int main(void)
         }
         // after updating the array, update the game board to reflect the array
         printBoard(gameBoard, ROWS, COLS);
+        bool isWon = check_diags(gameBoard, row, col, gameState);
+        if (isWon) printf("GAME WON!\n");
+        printf("%d\n", rounds);
     }
 
     // 123
