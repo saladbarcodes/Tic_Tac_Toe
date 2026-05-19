@@ -40,7 +40,7 @@ int getCol(int position)
 void player_one_turn(int *position, int *row, int *col)
 {
     printf("What position would you like P1?");
-    while (scanf("%d", position) != 1 || *position > 8 || *position < 0)
+    while (scanf("%d", position) != 1 || *position > 9 || *position < 0)
     {
         printf("What position would you like P1?");
         scanf("%d", position);
@@ -85,29 +85,31 @@ void initializeBoardArray(int (*gameBoard)[COLS], int rows, int cols)
     }
 }
 
-int updateBoardArray(int (*gameBoard)[COLS], int row, int col, int newVal)
+int updateBoardArray(int (*gameBoard)[COLS], int row, int col, int newVal, bool player_turn)
 {
     if (gameBoard[row][col] == 1 || gameBoard[row][col] == 2)
         return 0;
     gameBoard[row][col] = newVal;
-    // win_condition(gameBoard, row, col);
     return 1;
 }
 
 bool check_cross(int (*gameBoard)[COLS], int row, int col, bool player_turn)
 {
     int player = player_turn ? 1 : 2;
+    // printf("Player: %d\n", player); // debug
     int count = 0;
     for (int i = 0; i < ROWS; i++)
     {
         if (gameBoard[i][col] == player) count++;
     }
+    // printf("Count: %d\n", count); // debug
     if (count == 3) return true;
     count = 0;
     for (int j = 0; j < COLS; j++)
     {
         if (gameBoard[row][j] == player) count++;
     }
+    // printf("Count: %d\n", count); // debug
     if (count == 3) return true;
     return false;
 }
@@ -121,24 +123,42 @@ bool check_diags(int (*gameBoard)[COLS], int row, int col, bool player_turn)
     {
         if (gameBoard[i][i] == player) count++;
     }
+    // printf("Count: %d\n", count); // debug
     if (count == 3) return true;
     count = 0;
     for (int j = 0; j < COLS; j++)
     {
         if (gameBoard[j][currentCol--] == player) count++;
     }
+    // printf("Count: %d\n", count); // debug
     if (count == 3) return true;
     return false;
 }
 
-// bool win_condition(int (*gameBoard)[COLS], int row, int col)
-// {   
-//     if (row == 2 || col == 2) // if the row or col is 2 dont bother checking diagonals
-//     {
-//         return check_cross(gameBoard, row, col, );
-//     }
-//     return check_cross(gameBoard) && check_diags(gameBoard);
-// }
+void displayWinMessage(bool player_turn)
+{
+    if (player_turn)
+    {
+        printf("PLAYER 1 WON!!");
+        return;
+    }
+    printf("PLAYER 2 WON!!");
+}
+
+bool win_condition(int (*gameBoard)[COLS], int row, int col, bool player_turn)
+{   
+    return check_cross(gameBoard, row, col, player_turn) || check_diags(gameBoard, row, col, player_turn);
+}
+
+void is_won(int (*gameBoard)[COLS], bool CHECK_WIN, bool player_turn)
+{
+    if (CHECK_WIN) 
+    {
+        printBoard(gameBoard, ROWS, COLS);
+        displayWinMessage(player_turn);
+        exit(EXIT_SUCCESS);
+    }
+}
 
 // 0 is uninitialized, 1 is X's and 2 is O's
 int main(void)
@@ -151,6 +171,7 @@ int main(void)
     int row, col = 0;
     int gameBoard[ROWS][COLS];
     bool gameState = P1_TURN;
+    bool CHECK_WIN = false;
     int rounds = 0;
     // first we want to initialize the board
     initializeBoardArray(gameBoard, ROWS, COLS);
@@ -167,35 +188,33 @@ int main(void)
         if (gameState == P1_TURN)
         {
             player_one_turn(&position, &row, &col);
-            while (!updateBoardArray(gameBoard, row, col, 1))
+            while (!updateBoardArray(gameBoard, row, col, 1, gameState))
             {
                 printf("Invalid spot!");
                 player_one_turn(&position, &row, &col);
             }
-            gameState = P2_TURN;
             rounds++;
+            CHECK_WIN = win_condition(gameBoard, row, col, gameState);
+            is_won(gameBoard, CHECK_WIN, gameState);
+            gameState = P2_TURN;
         } else if (gameState == P2_TURN)
         {
             randNum = (rand() % 9) + 1;
             compRow = getRow(randNum);
             compCol = getCol(randNum);
-            while (!updateBoardArray(gameBoard, compRow, compCol, 2))
+            while (!updateBoardArray(gameBoard, compRow, compCol, 2, gameState))
             {
                 randNum = (rand() % 9) + 1;
                 compRow = getRow(randNum);
                 compCol = getCol(randNum);
             }
-            gameState = P1_TURN;
             rounds++;
+            CHECK_WIN = win_condition(gameBoard, compRow, compCol, gameState);
+            is_won(gameBoard, CHECK_WIN, gameState);
+            gameState = P1_TURN;
         }
         // after updating the array, update the game board to reflect the array
         printBoard(gameBoard, ROWS, COLS);
-        bool isWon = check_cross(gameBoard, row, col, gameState);
-        if (isWon) 
-        {
-            printf("GAME WON!\n");
-            return 0;
-        }
         printf("%d\n", rounds);
     }
     return 0;
