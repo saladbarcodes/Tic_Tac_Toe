@@ -8,6 +8,12 @@
 #define P1_TURN true
 #define P2_TURN false
 
+typedef enum
+{
+    PVC, // Player versus Computer
+    PVP  // Player versus Player
+}GameMode;
+
 int getRow(int position)
 {
     // checking bounds
@@ -46,11 +52,8 @@ void player_one_turn(int *position, int *row, int *col)
         scanf("%d", position);
         while (getchar() != '\n');
     }
-    // printf("%d", position); // debug
     *row = getRow(*position);
-    // printf("row %d", row); // debug
     *col = getCol(*position);
-    // printf("col %d", col); // debug
 }
 
 void printBoard(int (*gameBoard)[COLS], int rows, int cols)
@@ -96,20 +99,17 @@ int updateBoardArray(int (*gameBoard)[COLS], int row, int col, int newVal, bool 
 bool check_cross(int (*gameBoard)[COLS], int row, int col, bool player_turn)
 {
     int player = player_turn ? 1 : 2;
-    // printf("Player: %d\n", player); // debug
     int count = 0;
     for (int i = 0; i < ROWS; i++)
     {
         if (gameBoard[i][col] == player) count++;
     }
-    // printf("Count: %d\n", count); // debug
     if (count == 3) return true;
     count = 0;
     for (int j = 0; j < COLS; j++)
     {
         if (gameBoard[row][j] == player) count++;
     }
-    // printf("Count: %d\n", count); // debug
     if (count == 3) return true;
     return false;
 }
@@ -123,14 +123,12 @@ bool check_diags(int (*gameBoard)[COLS], int row, int col, bool player_turn)
     {
         if (gameBoard[i][i] == player) count++;
     }
-    // printf("Count: %d\n", count); // debug
     if (count == 3) return true;
     count = 0;
     for (int j = 0; j < COLS; j++)
     {
         if (gameBoard[j][currentCol--] == player) count++;
     }
-    // printf("Count: %d\n", count); // debug
     if (count == 3) return true;
     return false;
 }
@@ -164,6 +162,17 @@ void is_won(int (*gameBoard)[COLS], bool CHECK_WIN, bool player_turn)
 int main(void)
 {
     printf("Hello World!\n\n");
+    // GameMode currentMode = PVC;
+    // int mode = 0;
+    // printf("What game mode would you like to be in?\n");
+    // printf("Player versus computer is 1. Player versus player is 2. ");
+    // scanf(" %d", &mode);
+    // while (getchar() != '\n');
+    // if (mode == 1) 
+    // {
+    //     currentMode = PVC;
+    // } else
+    //     currentMode = PVP;
     srand(time(NULL));
     int randNum = (rand() % 9) + 1;
     int compRow = 0;
@@ -173,6 +182,7 @@ int main(void)
     bool gameState = P1_TURN;
     bool CHECK_WIN = false;
     int rounds = 0;
+
     // first we want to initialize the board
     initializeBoardArray(gameBoard, ROWS, COLS);
     
@@ -180,6 +190,17 @@ int main(void)
 
     // create an empty array to hold the possible positions of the game board
     int position = -1;
+
+    // This is what determines what game mode tictactoe is in
+    // switch(currentMode)
+    // {
+    //     case PVC:
+    //         printf("Player versus computer mode!");
+    //         break;
+    //     case PVP:
+    //         printf("Player versus player mode!");
+    //         break;
+    // }
 
     // create a turn based system to switch between player one and two
     // make it so that when a player/computer chooses a position it updates the empty array with an x/o
